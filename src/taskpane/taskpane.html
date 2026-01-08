@@ -38,6 +38,27 @@
         </div>
 
         <div class="feature-section">
+            <h3 class="ms-font-l">✏️ 文本扩写/缩写</h3>
+            <p class="ms-font-s description">选中文档中的文字，AI 将帮你扩写或缩写内容</p>
+            <div class="rewrite-controls">
+                <div class="control-group">
+                    <label class="ms-font-s">操作类型：</label>
+                    <select id="rewriteType" class="select-input">
+                        <option value="expand">扩写</option>
+                        <option value="compress">缩写</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label class="ms-font-s">目标字数：</label>
+                    <input type="number" id="targetWords" class="number-input" placeholder="例如：500" min="50" max="5000" value="300" />
+                </div>
+            </div>
+            <button id="rewriteBtn" class="ms-Button ms-Button--primary">
+                <span class="ms-Button-label">开始改写</span>
+            </button>
+        </div>
+
+        <div class="feature-section">
             <h3 class="ms-font-l">✨ AI 生成内容</h3>
             <textarea id="promptInput" class="input-area" placeholder="输入你的需求，例如：写一段关于人工智能的介绍..." rows="4"></textarea>
             <button id="generateBtn" class="ms-Button ms-Button--primary">
@@ -65,6 +86,14 @@
 
         <!-- 状态提示 -->
         <div id="statusMsg" class="status-msg"></div>
+        
+        <!-- 加载动画 -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p id="loadingText" class="loading-text">AI 正在生成中...</p>
+            </div>
+        </div>
     </main>
 </body>
 

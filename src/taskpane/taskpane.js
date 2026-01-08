@@ -16,6 +16,7 @@ Office.onReady((info) => {
     
     // 绑定事件
     document.getElementById("analyzeBtn").onclick = analyzeSelectedText;
+    document.getElementById("rewriteBtn").onclick = rewriteSelectedText;
     document.getElementById("generateBtn").onclick = generateContent;
     document.getElementById("uploadBtn").onclick = analyzeExcel;
     document.getElementById("insertBtn").onclick = insertToDocument;
@@ -23,12 +24,30 @@ Office.onReady((info) => {
 });
 
 /**
+ * 显示加载动画
+ */
+function showLoading(message = "AI 正在生成中...") {
+  const overlay = document.getElementById("loadingOverlay");
+  const loadingText = document.getElementById("loadingText");
+  loadingText.textContent = message;
+  overlay.style.display = "flex";
+}
+
+/**
+ * 隐藏加载动画
+ */
+function hideLoading() {
+  const overlay = document.getElementById("loadingOverlay");
+  overlay.style.display = "none";
+}
+
+/**
  * 显示状态消息
  */
-function showStatus(message, duration = 3000) {
+function showStatus(message, type = "info", duration = 3000) {
   const statusMsg = document.getElementById("statusMsg");
   statusMsg.textContent = message;
-  statusMsg.classList.add("show");
+  statusMsg.className = "status-msg show " + type;
   
   setTimeout(() => {
     statusMsg.classList.remove("show");
@@ -57,14 +76,106 @@ async function getSelectedText() {
 }
 
 /**
- * 2. 实时写入文字到 Word
+ * 2. 实时写入文字到 Word（优化格式，支持标题识别）
  */
 async function writeContentToWord(text) {
   await Word.run(async (context) => {
     const body = context.document.body;
-    body.insertParagraph(text, Word.InsertLocation.end);
+    
+    // 先插入一个空行
+    body.insertParagraph("", Word.InsertLocation.end);
+    
+    // 分段插入内容（按换行符分割）
+    const paragraphs = text.split('\n');
+    
+    for (let i = 0; i < paragraphs.length; i++) {
+      const paraText = paragraphs[i].trim();
+      
+      if (paraText) {
+        // 插入有内容的段落
+        const paragraph = body.insertParagraph(paraText, Word.InsertLocation.end);
+        
+        // 判断是否为标题（以【开头、包含"标题"、"##"开头、或全大写等）
+        const isTitle = 
+          paraText.startsWith('【') || 
+          paraText.startsWith('##') ||
+          paraText.startsWith('# ') ||
+          (paraText.includes('标题') && paraText.length < 30) ||
+          (paraText.endsWith('：') && paraText.length < 30);
+        
+        if (isTitle) {
+          // 标题样式
+          paragraph.font.size = 16; // 字号 16
+          paragraph.font.name = "Microsoft YaHei"; // 微软雅黑
+          paragraph.font.bold = true; // 加粗
+          paragraph.font.color = "#0078d4"; // 蓝色
+          paragraph.spaceAfter = 12; // 段后间距 12 磅
+          paragraph.spaceBefore = 12; // 段前间距 12 磅
+        } else {
+          // 正文样式
+          paragraph.font.size = 12; // 字号 12
+          paragraph.font.name = "Microsoft YaHei"; // 微软雅黑
+          paragraph.lineSpacing = 18; // 行间距 18 磅
+          paragraph.spaceAfter = 6; // 段后间距 6 磅
+        }
+      } else {
+        // 空行也插入，保持原有换行
+        body.insertParagraph("", Word.InsertLocation.end);
+      }
+    }
+    
+    // 再插入一个空行
+    body.insertParagraph("", Word.InsertLocation.end);
+    
     await context.sync();
   });
+}
+
+/**
+ * 3.5 扩写/缩写选中文本
+ */
+async function rewriteSelectedText() {
+  try {
+    showStatus("正在读取选中文本...", "info");
+    
+    const selectedText = await getSelectedText();
+    
+    if (!selectedText || selectedText.trim() === "") {
+      showStatus("请先选中文档中的文字！", "error");
+      return;
+    }
+    
+    const rewriteType = document.getElementById("rewriteType").value;
+    const targetWords = document.getElementById("targetWords").value;
+    
+    if (!targetWords || targetWords < 50) {
+      showStatus("请输入目标字数（至少 50 字）！", "error");
+      return;
+    }
+    
+    const typeText = rewriteType === "expand" ? "扩写" : "缩写";
+    showLoading(`AI 正在${typeText}中...`);
+    
+    // 构建提示词
+    let prompt = "";
+    if (rewriteType === "expand") {
+      prompt = `请将以下文本扩写到约 ${targetWords} 字，保持原意，增加细节、例子和描述，使内容更加丰富和生动：\n\n${selectedText}`;
+    } else {
+      prompt = `请将以下文本缩写到约 ${targetWords} 字，保留核心观点和关键信息，使表达更加简洁：\n\n${selectedText}`;
+    }
+    
+    // 调用 AI 服务
+    const rewrittenText = await aiService.generateContent(prompt);
+    
+    hideLoading();
+    showResult(rewrittenText);
+    showStatus(`✅ ${typeText}完成！`, "success");
+    
+  } catch (error) {
+    console.error(error);
+    hideLoading();
+    showStatus("❌ 改写失败：" + error.message, "error");
+  }
 }
 
 /**
@@ -72,26 +183,28 @@ async function writeContentToWord(text) {
  */
 async function analyzeSelectedText() {
   try {
-    showStatus("正在读取选中文本...");
+    showStatus("正在读取选中文本...", "info");
     
     const selectedText = await getSelectedText();
     
     if (!selectedText || selectedText.trim() === "") {
-      showStatus("请先选中文档中的文字！");
+      showStatus("请先选中文档中的文字！", "error");
       return;
     }
     
-    showStatus("正在调用 AI 分析...");
+    showLoading("AI 正在分析中...");
     
     // 调用 AI 服务分析文本
     const analysis = await aiService.analyzeText(selectedText);
     
+    hideLoading();
     showResult(analysis);
-    showStatus("分析完成！");
+    showStatus("✅ 分析完成！", "success");
     
   } catch (error) {
     console.error(error);
-    showStatus("分析失败：" + error.message);
+    hideLoading();
+    showStatus("❌ 分析失败：" + error.message, "error");
   }
 }
 
@@ -103,21 +216,23 @@ async function generateContent() {
     const prompt = document.getElementById("promptInput").value;
     
     if (!prompt || prompt.trim() === "") {
-      showStatus("请输入生成需求！");
+      showStatus("请输入生成需求！", "error");
       return;
     }
     
-    showStatus("AI 正在生成内容...");
+    showLoading("AI 正在生成内容，请稍候...");
     
     // 调用 AI 服务生成内容
     const content = await aiService.generateContent(prompt);
     
+    hideLoading();
     showResult(content);
-    showStatus("生成完成！");
+    showStatus("✅ 内容生成成功！", "success");
     
   } catch (error) {
     console.error(error);
-    showStatus("生成失败：" + error.message);
+    hideLoading();
+    showStatus("❌ 生成失败：" + error.message, "error");
   }
 }
 
@@ -130,26 +245,28 @@ async function analyzeExcel() {
     const file = fileInput.files[0];
     
     if (!file) {
-      showStatus("请先选择 Excel 文件！");
+      showStatus("请先选择 Excel 文件！", "error");
       return;
     }
     
-    showStatus("正在读取 Excel 文件...");
+    showLoading("正在读取 Excel 文件...");
     
     // 读取文件内容
     const fileData = await readExcelFile(file);
     
-    showStatus("正在调用 AI 分析数据...");
+    document.getElementById("loadingText").textContent = "AI 正在分析数据...";
     
     // 调用 AI 服务分析 Excel 数据
     const analysis = await aiService.analyzeExcelData(fileData);
     
+    hideLoading();
     showResult(analysis);
-    showStatus("Excel 分析完成！");
+    showStatus("✅ Excel 分析完成！", "success");
     
   } catch (error) {
     console.error(error);
-    showStatus("分析失败：" + error.message);
+    hideLoading();
+    showStatus("❌ 分析失败：" + error.message, "error");
   }
 }
 
@@ -159,17 +276,19 @@ async function analyzeExcel() {
 async function insertToDocument() {
   try {
     if (!generatedContent) {
-      showStatus("没有可插入的内容！");
+      showStatus("没有可插入的内容！", "error");
       return;
     }
     
-    showStatus("正在插入到文档...");
+    showLoading("正在插入到文档...");
     await writeContentToWord(generatedContent);
-    showStatus("插入成功！");
+    hideLoading();
+    showStatus("✅ 内容已成功插入到文档！", "success");
     
   } catch (error) {
     console.error(error);
-    showStatus("插入失败：" + error.message);
+    hideLoading();
+    showStatus("❌ 插入失败：" + error.message, "error");
   }
 }
 
@@ -203,6 +322,7 @@ export {
   getSelectedText, 
   writeContentToWord, 
   analyzeSelectedText,
+  rewriteSelectedText,
   generateContent,
   analyzeExcel
 };

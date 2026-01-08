@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AI Copilot - 智能写作助手</title>
+    <title>StakeJoy Copilot - 智能写作助手</title>
 
     <!-- Office JavaScript API -->
     <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
@@ -19,8 +19,8 @@
 
 <body class="ms-font-m ms-Fabric">
     <header class="app-header ms-bgColor-themePrimary">
-        <img width="50" height="50" src="../../assets/logo-filled.png" alt="AI Copilot" title="AI Copilot" />
-        <h1 class="ms-font-xl ms-fontColor-white">AI Copilot</h1>
+        <img width="50" height="50" src="../../assets/logo.png" alt="StakeJoy Copilot" title="StakeJoy Copilot" />
+        <h1 class="ms-font-xl ms-fontColor-white">StakeJoy Copilot</h1>
     </header>
     
     <section id="sideload-msg" class="ms-welcome__main">
@@ -30,7 +30,7 @@
     <main id="app-body" class="app-main" style="display: none;">
         <!-- 功能区域 -->
         <div class="feature-section">
-            <h3 class="ms-font-l">📝 选中文本分析</h3>
+            <h3 class="ms-font-l section-title">📝 选中文本分析</h3>
             <p class="ms-font-s description">选中文档中的文字，AI 将为你提供智能分析和建议</p>
             <button id="analyzeBtn" class="ms-Button ms-Button--primary">
                 <span class="ms-Button-label">分析选中文本</span>
@@ -38,7 +38,7 @@
         </div>
 
         <div class="feature-section">
-            <h3 class="ms-font-l">✏️ 文本扩写/缩写</h3>
+            <h3 class="ms-font-l section-title">✏️ 文本扩写/缩写</h3>
             <p class="ms-font-s description">选中文档中的文字，AI 将帮你扩写或缩写内容</p>
             <div class="rewrite-controls">
                 <div class="control-group">
@@ -59,15 +59,15 @@
         </div>
 
         <div class="feature-section">
-            <h3 class="ms-font-l">✨ AI 生成内容</h3>
-            <textarea id="promptInput" class="input-area" placeholder="输入你的需求，例如：写一段关于人工智能的介绍..." rows="4"></textarea>
+            <h3 class="ms-font-l section-title">✨ AI 生成内容</h3>
+            <textarea id="promptInput" class="input-area large-input" placeholder="输入你的需求，例如：写一段关于人工智能的介绍..." rows="6"></textarea>
             <button id="generateBtn" class="ms-Button ms-Button--primary">
                 <span class="ms-Button-label">生成内容</span>
             </button>
         </div>
 
         <div class="feature-section">
-            <h3 class="ms-font-l">📄 Excel 数据导入</h3>
+            <h3 class="ms-font-l section-title">📄 Excel 数据导入</h3>
             <p class="ms-font-s description">上传 Excel 文件，AI 将分析数据并生成报告</p>
             <input type="file" id="excelInput" accept=".xlsx,.xls" class="file-input" />
             <button id="uploadBtn" class="ms-Button ms-Button--primary">
@@ -77,7 +77,7 @@
 
         <!-- 结果显示区域 -->
         <div id="resultSection" class="result-section" style="display: none;">
-            <h3 class="ms-font-l">💡 AI 分析结果</h3>
+            <h3 class="ms-font-l section-title">💡 AI 分析结果</h3>
             <div id="resultContent" class="result-content"></div>
             <button id="insertBtn" class="ms-Button ms-Button--hero">
                 <span class="ms-Button-label">插入到文档</span>

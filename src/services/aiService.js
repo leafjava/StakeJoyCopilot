@@ -3,18 +3,16 @@
  * 支持多种 AI 提供商的统一接口
  */
 
-// 如果创建了 config.js，取消下面的注释
-// import { AI_CONFIG, SYSTEM_PROMPTS, REQUEST_CONFIG } from '../config.js';
+import { AI_CONFIG, SYSTEM_PROMPTS, REQUEST_CONFIG } from '../config.js';
 
 /**
  * AI 服务类
  */
 class AIService {
   constructor(config) {
-    this.config = config || {
-      provider: 'mock', // 默认使用模拟数据
-      timeout: 30000
-    };
+    this.config = config || AI_CONFIG;
+    this.systemPrompts = SYSTEM_PROMPTS;
+    this.requestConfig = REQUEST_CONFIG;
   }
 
   /**
@@ -71,31 +69,37 @@ class AIService {
   async callOpenAI(content, type) {
     const { apiKey, baseURL, model, maxTokens, temperature } = this.config.openai;
     
-    const systemPrompt = this.getSystemPrompt(type);
+    const systemPrompt = this.systemPrompts[type] || this.getSystemPrompt(type);
     
-    const response = await fetch(`${baseURL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: content }
-        ],
-        max_tokens: maxTokens,
-        temperature: temperature
-      })
-    });
+    try {
+      const response = await fetch(`${baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: content }
+          ],
+          max_tokens: maxTokens,
+          temperature: temperature
+        })
+      });
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API 错误: ${response.status} ${response.statusText}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`OpenAI API 错误: ${response.status} ${response.statusText} - ${errorData.error?.message || ''}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('OpenAI API 调用失败:', error);
+      throw error;
     }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   }
 
   /**
@@ -163,10 +167,14 @@ class AIService {
    * 获取系统提示词
    */
   getSystemPrompt(type) {
+    if (this.systemPrompts && this.systemPrompts[type]) {
+      return this.systemPrompts[type];
+    }
+    
     const prompts = {
-      analyze: '你是一个专业的文本分析助手。请仔细分析用户提供的文本，从结构、逻辑、用词、表达等多个维度给出专业的改进建议。',
-      generate: '你是一个专业的内容创作助手。请根据用户的需求生成高质量、结构清晰、逻辑严谨的内容。',
-      excelAnalysis: '你是一个数据分析专家。请分析数据，提取关键信息，发现数据趋势，并给出专业的分析报告和建议。'
+      analyze: '你是一个专业的文本分析助手。请仔细分析用户提供的文本，从结构、逻辑、用词、表达等多个维度给出专业的改进建议。请用中文回复。',
+      generate: '你是一个专业的内容创作助手。请根据用户的需求生成高质量、结构清晰、逻辑严谨的内容。请用中文回复。',
+      excelAnalysis: '你是一个数据分析专家。请分析数据，提取关键信息，发现数据趋势，并给出专业的分析报告和建议。请用中文回复。'
     };
     
     return prompts[type] || prompts.generate;
@@ -247,8 +255,8 @@ AI 的核心目标是让机器能够像人类一样思考、学习和解决问�
   }
 }
 
-// 创建默认实例
-const aiService = new AIService();
+// 创建默认实例（使用配置文件中的设置）
+const aiService = new AIService(AI_CONFIG);
 
 export default aiService;
 export { AIService };

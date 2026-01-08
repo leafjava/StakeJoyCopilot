@@ -78,6 +78,57 @@
         </div>
 
         <div class="feature-section">
+            <h3 class="ms-font-l section-title">🔍 查重与降重</h3>
+            <p class="ms-font-s description">检测文本查重率和 AI 率，并一键降低重复度</p>
+            <div class="plagiarism-buttons">
+                <button id="checkPlagiarismBtn" class="ms-Button ms-Button--secondary">
+                    <span class="ms-Button-label">查看查重率</span>
+                </button>
+                <button id="reducePlagiarismBtn" class="ms-Button ms-Button--primary">
+                    <span class="ms-Button-label">一键降重</span>
+                </button>
+            </div>
+            
+            <!-- 降重目标设置 -->
+            <div class="reduce-controls">
+                <div class="control-group">
+                    <label class="ms-font-s">目标查重率：</label>
+                    <select id="targetPlagiarismRate" class="select-input">
+                        <option value="5">5%（极低）</option>
+                        <option value="10" selected>10%（很低）</option>
+                        <option value="15">15%（低）</option>
+                        <option value="20">20%（较低）</option>
+                        <option value="25">25%（中等）</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label class="ms-font-s">目标 AI 率：</label>
+                    <select id="targetAIRate" class="select-input">
+                        <option value="5">5%（极低）</option>
+                        <option value="10" selected>10%（很低）</option>
+                        <option value="15">15%（低）</option>
+                        <option value="20">20%（较低）</option>
+                        <option value="25">25%（中等）</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="plagiarismResult" class="plagiarism-result" style="display: none;">
+                <div class="plagiarism-scores">
+                    <div class="plagiarism-score">
+                        <span class="score-label">查重率</span>
+                        <span id="plagiarismScore" class="score-value">0%</span>
+                    </div>
+                    <div class="plagiarism-score">
+                        <span class="score-label">AI 率</span>
+                        <span id="aiScore" class="score-value">0%</span>
+                    </div>
+                </div>
+                <p id="plagiarismAdvice" class="plagiarism-advice"></p>
+            </div>
+        </div>
+
+        <div class="feature-section">
             <h3 class="ms-font-l section-title">✨ AI 生成内容</h3>
             <textarea id="promptInput" class="input-area large-input" placeholder="输入你的需求，例如：写一段关于人工智能的介绍..." rows="6"></textarea>
             <button id="generateBtn" class="ms-Button ms-Button--primary">

@@ -79,6 +79,8 @@ Office.onReady((info) => {
     // 绑定事件
     document.getElementById("analyzeBtn").onclick = analyzeSelectedText;
     document.getElementById("rewriteBtn").onclick = rewriteSelectedText;
+    document.getElementById("checkPlagiarismBtn").onclick = checkPlagiarism;
+    document.getElementById("reducePlagiarismBtn").onclick = reducePlagiarism;
     document.getElementById("generateBtn").onclick = generateContent;
     document.getElementById("uploadBtn").onclick = analyzeExcel;
     document.getElementById("insertBtn").onclick = insertToDocument;
@@ -212,6 +214,148 @@ async function writeContentToWord(text) {
     
     await context.sync();
   });
+}
+
+/**
+ * 3.7 查看查重率和 AI 率
+ */
+async function checkPlagiarism() {
+  try {
+    showStatus("正在读取选中文本...", "info");
+    
+    const selectedText = await getSelectedText();
+    
+    if (!selectedText || selectedText.trim() === "") {
+      showStatus("请先选中文档中的文字！", "error");
+      return;
+    }
+    
+    showLoading("AI 正在检测查重率和 AI 率...");
+    
+    // 构建提示词
+    const prompt = `请分析以下文本的原创性、重复度和 AI 生成痕迹。请按以下格式回复：
+
+查重率：XX%
+AI率：XX%
+查重分析：[详细分析文本的原创性、常见表达、专业术语使用、与已有内容的相似度等]
+AI率分析：[分析文本是否有 AI 生成的特征，如：过于规整的句式、机械化的表达、缺乏个性化语言等]
+降重建议：[如何降低查重率的具体建议]
+降AI建议：[如何让文本更像人类写作的建议]
+
+文本内容：
+${selectedText}`;
+    
+    // 调用 AI 服务
+    const analysis = await aiService.generateContent(prompt);
+    
+    hideLoading();
+    
+    // 解析查重率和 AI 率
+    const plagiarismMatch = analysis.match(/查重率[：:]\s*(\d+)%/);
+    const aiMatch = analysis.match(/AI率[：:]\s*(\d+)%/);
+    
+    const plagiarismScore = plagiarismMatch ? parseInt(plagiarismMatch[1]) : 0;
+    const aiScore = aiMatch ? parseInt(aiMatch[1]) : 0;
+    
+    // 显示结果
+    document.getElementById("plagiarismScore").textContent = plagiarismScore + "%";
+    document.getElementById("plagiarismScore").className = "score-value " + getScoreClass(plagiarismScore);
+    
+    document.getElementById("aiScore").textContent = aiScore + "%";
+    document.getElementById("aiScore").className = "score-value " + getScoreClass(aiScore);
+    
+    document.getElementById("plagiarismAdvice").textContent = analysis;
+    document.getElementById("plagiarismResult").style.display = "block";
+    
+    showStatus("✅ 检测完成！", "success");
+    
+  } catch (error) {
+    console.error(error);
+    hideLoading();
+    showStatus("❌ 检测失败：" + error.message, "error");
+  }
+}
+
+/**
+ * 3.8 一键降重（同时降低查重率和 AI 率）
+ */
+async function reducePlagiarism() {
+  try {
+    showStatus("正在读取选中文本...", "info");
+    
+    const selectedText = await getSelectedText();
+    
+    if (!selectedText || selectedText.trim() === "") {
+      showStatus("请先选中文档中的文字！", "error");
+      return;
+    }
+    
+    // 获取目标指标
+    const targetPlagiarism = document.getElementById("targetPlagiarismRate").value;
+    const targetAI = document.getElementById("targetAIRate").value;
+    
+    showLoading(`AI 正在降重中（目标：查重率${targetPlagiarism}%，AI率${targetAI}%）...`);
+    
+    // 获取当前角色的系统提示词
+    const roleConfig = ROLE_CONFIGS[currentRole];
+    
+    // 构建提示词
+    const prompt = `${roleConfig.systemPrompt}
+
+请对以下文本进行深度改写，目标是将查重率降至 ${targetPlagiarism}% 以下，AI 率降至 ${targetAI}% 以下。
+
+改写要求：
+
+【降低查重率到 ${targetPlagiarism}%】
+1. 保持原文的核心意思和观点完全不变
+2. 大量使用同义词、近义词替换
+3. 彻底改变句式结构和语序
+4. 避免使用任何常见的固定表达
+5. 增加具体的细节、数据和例子
+6. 用自己的话重新组织内容
+
+【降低 AI 率到 ${targetAI}%】
+1. 使用非常自然、口语化的表达方式
+2. 加入个人观点、情感色彩和主观判断
+3. 避免过于规整、对称的句式结构
+4. 使用俗语、比喻、拟人等多种修辞手法
+5. 句子长短要有明显变化，不要整齐划一
+6. 适当使用反问、设问等互动性表达
+7. 加入一些口语化的连接词，如"其实"、"说实话"、"不过"等
+8. 让文字有温度，像是在和朋友聊天
+
+【重要提示】
+- 查重率越低越好，最低可以到 5%
+- AI 率越低越好，要让文字完全像人类写的
+- 改写幅度要大，不要只是简单替换几个词
+- 保持专业性的同时增加人性化表达
+
+原文：
+${selectedText}
+
+请直接输出改写后的内容，不要包含任何解释说明。`;
+    
+    // 调用 AI 服务
+    const rewrittenText = await aiService.generateContent(prompt);
+    
+    hideLoading();
+    showResult(rewrittenText);
+    showStatus(`✅ 降重完成！已按目标（查重率${targetPlagiarism}%，AI率${targetAI}%）改写，建议再次检测确认`, "success", 4000);
+    
+  } catch (error) {
+    console.error(error);
+    hideLoading();
+    showStatus("❌ 降重失败：" + error.message, "error");
+  }
+}
+
+/**
+ * 根据查重率获取样式类
+ */
+function getScoreClass(score) {
+  if (score < 20) return "score-good";
+  if (score < 40) return "score-medium";
+  return "score-high";
 }
 
 /**
@@ -417,6 +561,8 @@ export {
   writeContentToWord, 
   analyzeSelectedText,
   rewriteSelectedText,
+  checkPlagiarism,
+  reducePlagiarism,
   generateContent,
   analyzeExcel
 };

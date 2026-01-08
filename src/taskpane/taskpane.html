@@ -129,6 +129,72 @@
         </div>
 
         <div class="feature-section">
+            <h3 class="ms-font-l section-title">📄 论文格式化</h3>
+            <p class="ms-font-s description">一键设置论文格式，包括页眉、标题、正文等</p>
+            
+            <div class="format-controls">
+                <div class="control-group">
+                    <label class="ms-font-s">页眉内容：</label>
+                    <input type="text" id="headerText" class="number-input" placeholder="例如：XX大学本科毕业论文" />
+                </div>
+                
+                <div class="format-grid">
+                    <div class="control-group">
+                        <label class="ms-font-s">标题字号：</label>
+                        <select id="titleSize" class="select-input">
+                            <option value="16">16 号</option>
+                            <option value="18" selected>18 号</option>
+                            <option value="20">20 号</option>
+                            <option value="22">22 号</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="ms-font-s">一级标题：</label>
+                        <select id="heading1Size" class="select-input">
+                            <option value="14">14 号</option>
+                            <option value="15" selected>15 号</option>
+                            <option value="16">16 号</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="ms-font-s">二级标题：</label>
+                        <select id="heading2Size" class="select-input">
+                            <option value="12">12 号</option>
+                            <option value="13" selected>13 号</option>
+                            <option value="14">14 号</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="ms-font-s">正文字号：</label>
+                        <select id="bodySize" class="select-input">
+                            <option value="10.5">10.5 号</option>
+                            <option value="11">11 号</option>
+                            <option value="12" selected>12 号</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="ms-font-s">行间距：</label>
+                        <select id="lineSpacing" class="select-input">
+                            <option value="1.5" selected>1.5 倍</option>
+                            <option value="1.75">1.75 倍</option>
+                            <option value="2">2 倍</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <p class="format-hint">💡 提示：格式化会应用到整个文档。标题识别规则：一、二、1. 2. 等为一级标题；（一）（1）1.1 等为二级标题</p>
+            </div>
+            
+            <button id="formatPaperBtn" class="ms-Button ms-Button--primary">
+                <span class="ms-Button-label">一键格式化</span>
+            </button>
+        </div>
+
+        <div class="feature-section">
             <h3 class="ms-font-l section-title">✨ AI 生成内容</h3>
             <textarea id="promptInput" class="input-area large-input" placeholder="输入你的需求，例如：写一段关于人工智能的介绍..." rows="6"></textarea>
             <button id="generateBtn" class="ms-Button ms-Button--primary">

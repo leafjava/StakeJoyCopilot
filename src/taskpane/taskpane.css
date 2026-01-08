@@ -512,3 +512,29 @@ body {
 .plagiarism-advice::-webkit-scrollbar-thumb:hover {
     background: #a19f9d;
 }
+
+/* 论文格式化样式 */
+.format-controls {
+    margin-bottom: 16px;
+}
+
+.format-controls .control-group {
+    margin-bottom: 12px;
+}
+
+.format-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.format-hint {
+    margin: 12px 0 0 0;
+    padding: 10px;
+    background: #fff4ce;
+    border-radius: 6px;
+    border-left: 3px solid #ff8c00;
+    color: #323130;
+    font-size: 12px;
+    line-height: 1.5;
+}

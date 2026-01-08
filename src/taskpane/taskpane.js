@@ -81,6 +81,7 @@ Office.onReady((info) => {
     document.getElementById("rewriteBtn").onclick = rewriteSelectedText;
     document.getElementById("checkPlagiarismBtn").onclick = checkPlagiarism;
     document.getElementById("reducePlagiarismBtn").onclick = reducePlagiarism;
+    document.getElementById("formatPaperBtn").onclick = formatPaper;
     document.getElementById("generateBtn").onclick = generateContent;
     document.getElementById("uploadBtn").onclick = analyzeExcel;
     document.getElementById("insertBtn").onclick = insertToDocument;
@@ -359,6 +360,100 @@ function getScoreClass(score) {
 }
 
 /**
+ * 3.9 论文格式化
+ */
+async function formatPaper() {
+  try {
+    showLoading("正在格式化论文...");
+    
+    // 获取格式设置
+    const headerText = document.getElementById("headerText").value;
+    const titleSize = parseInt(document.getElementById("titleSize").value);
+    const heading1Size = parseInt(document.getElementById("heading1Size").value);
+    const heading2Size = parseInt(document.getElementById("heading2Size").value);
+    const bodySize = parseInt(document.getElementById("bodySize").value);
+    const lineSpacing = parseFloat(document.getElementById("lineSpacing").value);
+    
+    await Word.run(async (context) => {
+      const doc = context.document;
+      
+      // 1. 设置页眉
+      if (headerText && headerText.trim()) {
+        const sections = doc.sections;
+        sections.load("items");
+        await context.sync();
+        
+        for (let i = 0; i < sections.items.length; i++) {
+          const header = sections.items[i].getHeader(Word.HeaderFooterType.primary);
+          header.clear();
+          const headerParagraph = header.insertParagraph(headerText, Word.InsertLocation.start);
+          headerParagraph.alignment = Word.Alignment.centered;
+          headerParagraph.font.size = 9;
+          headerParagraph.font.name = "Microsoft YaHei";
+        }
+      }
+      
+      // 2. 格式化文档内容
+      const body = doc.body;
+      const paragraphs = body.paragraphs;
+      paragraphs.load("items");
+      await context.sync();
+      
+      for (let i = 0; i < paragraphs.items.length; i++) {
+        const para = paragraphs.items[i];
+        para.load("text,style");
+        await context.sync();
+        
+        const text = para.text.trim();
+        if (!text) continue;
+        
+        // 判断段落类型并应用格式
+        if (i === 0 || text.length < 50 && !text.includes("。") && !text.includes(".")) {
+          // 可能是标题
+          para.font.size = titleSize;
+          para.font.bold = true;
+          para.font.name = "Microsoft YaHei";
+          para.alignment = Word.Alignment.centered;
+          para.spaceAfter = 18;
+          para.spaceBefore = 18;
+        } else if (text.match(/^[一二三四五六七八九十\d]+[、\.．]/)) {
+          // 一级标题（如：一、二、1. 2.）
+          para.font.size = heading1Size;
+          para.font.bold = true;
+          para.font.name = "Microsoft YaHei";
+          para.spaceAfter = 12;
+          para.spaceBefore = 12;
+        } else if (text.match(/^[\(（][一二三四五\d]+[\)）]/) || text.match(/^\d+\.\d+/)) {
+          // 二级标题（如：（一）（1）1.1 1.2）
+          para.font.size = heading2Size;
+          para.font.bold = true;
+          para.font.name = "Microsoft YaHei";
+          para.spaceAfter = 6;
+          para.spaceBefore = 6;
+        } else {
+          // 正文
+          para.font.size = bodySize;
+          para.font.name = "Microsoft YaHei";
+          para.lineSpacing = lineSpacing * 12; // 转换为磅值
+          para.spaceAfter = 0;
+          para.firstLineIndent = 24; // 首行缩进2字符
+        }
+      }
+      
+      await context.sync();
+    });
+    
+    hideLoading();
+    showStatus("✅ 论文格式化完成！", "success");
+    
+  } catch (error) {
+    console.error(error);
+    hideLoading();
+    showStatus("❌ 格式化失败：" + error.message, "error");
+  }
+}
+
+/**
  * 3.5 扩写/缩写选中文本
  */
 async function rewriteSelectedText() {
@@ -563,6 +658,7 @@ export {
   rewriteSelectedText,
   checkPlagiarism,
   reducePlagiarism,
+  formatPaper,
   generateContent,
   analyzeExcel
 };

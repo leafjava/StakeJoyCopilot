@@ -9,6 +9,68 @@ import aiService from '../services/aiService.js';
 // 存储 AI 生成的内容
 let generatedContent = "";
 
+// 当前选中的角色
+let currentRole = "default";
+
+// 角色配置
+const ROLE_CONFIGS = {
+  default: {
+    name: "通用助手",
+    description: "通用 AI 助手，可以帮助你完成各种写作任务",
+    systemPrompt: "你是一个专业的写作助手，能够帮助用户分析、生成和优化各类文档内容。"
+  },
+  storyteller: {
+    name: "讲故事的人",
+    description: "一款创意型人工智能聊天机器人，旨在通过想象力丰富的故事和传说吸引观众",
+    systemPrompt: "你是一个富有创意的故事讲述者，擅长创作引人入胜的故事。你的故事充满想象力，情节生动，能够深深吸引读者。请用生动的语言、丰富的细节和引人入胜的情节来讲述故事。"
+  },
+  writer: {
+    name: "文章润色",
+    description: "一个帮助你轻松写出美丽而有创意的诗歌的工具",
+    systemPrompt: "你是一个专业的文章润色专家，擅长优化文章的表达、结构和用词。你能够让文章更加流畅、优雅、专业，同时保持原意不变。"
+  },
+  novelist: {
+    name: "小说家",
+    description: "一个AI聊天机器人，作为虚拟小说家，创作出各种类型的引人入胜的故事",
+    systemPrompt: "你是一个经验丰富的小说家，擅长创作各种类型的小说。你的作品情节跌宕起伏，人物形象鲜明，语言生动优美，能够深深打动读者的心。"
+  },
+  poet: {
+    name: "诗人",
+    description: "一个帮助创作优美诗歌的 AI 助手",
+    systemPrompt: "你是一位才华横溢的诗人，擅长创作各种风格的诗歌。你的诗歌意境深远，韵律优美，富有感染力，能够触动人心。"
+  },
+  teacher: {
+    name: "英语教官",
+    description: "这个AI聊天机器人可以充当英语翻译、拼写纠正和改进的角色",
+    systemPrompt: "你是一位专业的英语教师，擅长英语翻译、语法纠正和表达优化。你能够准确地翻译内容，纠正语法错误，并提供更地道的英语表达建议。"
+  },
+  programmer: {
+    name: "程序员",
+    description: "帮你编写和优化代码的 AI 助手",
+    systemPrompt: "你是一位经验丰富的程序员，精通多种编程语言和开发技术。你能够编写高质量的代码，提供技术解决方案，并解释复杂的技术概念。"
+  },
+  marketer: {
+    name: "营销专家",
+    description: "帮助你创作营销文案和策划方案",
+    systemPrompt: "你是一位资深的营销专家，擅长创作吸引人的营销文案、策划创意营销活动。你深谙消费者心理，能够创作出打动人心的营销内容。"
+  },
+  consultant: {
+    name: "旅游顾问",
+    description: "帮你规划旅行，让旅途充满惊喜和收获",
+    systemPrompt: "你是一位经验丰富的旅游顾问，熟悉世界各地的旅游景点、文化习俗和旅行技巧。你能够为用户提供专业的旅行建议和详细的行程规划。"
+  },
+  twitter: {
+    name: "推特文章创作",
+    description: "帮你创作吸引眼球的推特内容，简洁有力，引发互动",
+    systemPrompt: "你是一位专业的社交媒体内容创作者，擅长创作推特（Twitter/X）内容。你的文字简洁有力、富有感染力，善于使用话题标签、表情符号，能够引发用户互动和转发。你了解社交媒体传播规律，能够创作出病毒式传播的内容。"
+  },
+  crypto: {
+    name: "币圈分析家",
+    description: "专业的加密货币和区块链分析专家，提供深度市场洞察",
+    systemPrompt: "你是一位资深的加密货币和区块链分析专家，对比特币、以太坊等主流加密货币以及 DeFi、NFT、Web3 等领域有深入研究。你能够分析市场趋势、解读技术指标、评估项目价值，并提供专业的投资建议。你的分析客观理性，基于数据和技术面，同时关注行业动态和监管政策。"
+  }
+};
+
 Office.onReady((info) => {
   if (info.host === Office.HostType.Word) {
     document.getElementById("sideload-msg").style.display = "none";
@@ -20,8 +82,29 @@ Office.onReady((info) => {
     document.getElementById("generateBtn").onclick = generateContent;
     document.getElementById("uploadBtn").onclick = analyzeExcel;
     document.getElementById("insertBtn").onclick = insertToDocument;
+    document.getElementById("roleSelector").onchange = handleRoleChange;
+    
+    // 初始化角色描述
+    updateRoleDescription();
   }
 });
+
+/**
+ * 处理角色切换
+ */
+function handleRoleChange() {
+  currentRole = document.getElementById("roleSelector").value;
+  updateRoleDescription();
+  showStatus(`已切换到：${ROLE_CONFIGS[currentRole].name}`, "success", 2000);
+}
+
+/**
+ * 更新角色描述
+ */
+function updateRoleDescription() {
+  const roleConfig = ROLE_CONFIGS[currentRole];
+  document.getElementById("roleDescription").textContent = roleConfig.description;
+}
 
 /**
  * 显示加载动画
@@ -156,12 +239,15 @@ async function rewriteSelectedText() {
     const typeText = rewriteType === "expand" ? "扩写" : "缩写";
     showLoading(`AI 正在${typeText}中...`);
     
+    // 获取当前角色的系统提示词
+    const roleConfig = ROLE_CONFIGS[currentRole];
+    
     // 构建提示词
-    let prompt = "";
+    let prompt = `${roleConfig.systemPrompt}\n\n`;
     if (rewriteType === "expand") {
-      prompt = `请将以下文本扩写到约 ${targetWords} 字，保持原意，增加细节、例子和描述，使内容更加丰富和生动：\n\n${selectedText}`;
+      prompt += `请将以下文本扩写到约 ${targetWords} 字，保持原意，增加细节、例子和描述，使内容更加丰富和生动：\n\n${selectedText}`;
     } else {
-      prompt = `请将以下文本缩写到约 ${targetWords} 字，保留核心观点和关键信息，使表达更加简洁：\n\n${selectedText}`;
+      prompt += `请将以下文本缩写到约 ${targetWords} 字，保留核心观点和关键信息，使表达更加简洁：\n\n${selectedText}`;
     }
     
     // 调用 AI 服务
@@ -194,8 +280,12 @@ async function analyzeSelectedText() {
     
     showLoading("AI 正在分析中...");
     
+    // 获取当前角色的系统提示词
+    const roleConfig = ROLE_CONFIGS[currentRole];
+    const customPrompt = `${roleConfig.systemPrompt}\n\n请分析以下文本，从结构、逻辑、用词、表达等多个维度给出专业的改进建议：\n\n${selectedText}`;
+    
     // 调用 AI 服务分析文本
-    const analysis = await aiService.analyzeText(selectedText);
+    const analysis = await aiService.generateContent(customPrompt);
     
     hideLoading();
     showResult(analysis);
@@ -222,8 +312,12 @@ async function generateContent() {
     
     showLoading("AI 正在生成内容，请稍候...");
     
+    // 获取当前角色的系统提示词
+    const roleConfig = ROLE_CONFIGS[currentRole];
+    const customPrompt = `${roleConfig.systemPrompt}\n\n${prompt}`;
+    
     // 调用 AI 服务生成内容
-    const content = await aiService.generateContent(prompt);
+    const content = await aiService.generateContent(customPrompt);
     
     hideLoading();
     showResult(content);

@@ -23,6 +23,25 @@
         <h1 class="ms-font-xl ms-fontColor-white">StakeJoy Copilot</h1>
     </header>
     
+    <!-- 角色选择区域 -->
+    <div class="role-selector-section">
+        <label class="role-label">选择 AI 角色：</label>
+        <select id="roleSelector" class="role-select">
+            <option value="default">💼 通用助手</option>
+            <option value="storyteller">📖 讲故事的人</option>
+            <option value="writer">✍️ 文章润色</option>
+            <option value="novelist">📚 小说家</option>
+            <option value="poet">🎭 诗人</option>
+            <option value="teacher">👨‍🏫 英语教官</option>
+            <option value="programmer">💻 程序员</option>
+            <option value="marketer">📊 营销专家</option>
+            <option value="consultant">🎯 旅游顾问</option>
+            <option value="twitter">🐦 推特文章创作</option>
+            <option value="crypto">💰 币圈分析家</option>
+        </select>
+        <p id="roleDescription" class="role-description">通用 AI 助手，可以帮助你完成各种写作任务</p>
+    </div>
+    
     <section id="sideload-msg" class="ms-welcome__main">
         <h2 class="ms-font-xl">请先<a target="_blank" href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing">加载</a>插件</h2>
     </section>

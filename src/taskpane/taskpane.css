@@ -348,3 +348,53 @@ body {
     -webkit-appearance: none;
     margin: 0;
 }
+
+/* 角色选择区域 */
+.role-selector-section {
+    padding: 16px 20px;
+    background: white;
+    border-bottom: 2px solid #edebe9;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.role-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #323130;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.role-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #edebe9;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.role-select:hover {
+    border-color: #0078d4;
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: #0078d4;
+    box-shadow: 0 0 0 1px #0078d4;
+}
+
+.role-description {
+    margin: 10px 0 0 0;
+    padding: 10px;
+    background: #f3f2f1;
+    border-radius: 6px;
+    color: #605e5c;
+    font-size: 13px;
+    line-height: 1.5;
+    border-left: 3px solid #0078d4;
+}

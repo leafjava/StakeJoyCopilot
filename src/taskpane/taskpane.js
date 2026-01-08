@@ -5,6 +5,7 @@
 /* global console, document, Word, Office */
 
 import aiService from '../services/aiService.js';
+import mammoth from 'mammoth';
 
 // 存储 AI 生成的内容
 let generatedContent = "";
@@ -82,10 +83,20 @@ Office.onReady((info) => {
     document.getElementById("checkPlagiarismBtn").onclick = checkPlagiarism;
     document.getElementById("reducePlagiarismBtn").onclick = reducePlagiarism;
     document.getElementById("formatPaperBtn").onclick = formatPaper;
+    document.getElementById("imitateStyleBtn").onclick = imitateStyle;
     document.getElementById("generateBtn").onclick = generateContent;
     document.getElementById("uploadBtn").onclick = analyzeExcel;
     document.getElementById("insertBtn").onclick = insertToDocument;
     document.getElementById("roleSelector").onchange = handleRoleChange;
+    
+    // 文件上传显示文件名
+    document.getElementById("sampleFile").onchange = function() {
+      const file = this.files[0];
+      if (file) {
+        document.getElementById("fileName").textContent = file.name;
+        document.getElementById("uploadStatus").classList.add("show");
+      }
+    };
     
     // 初始化角色描述
     updateRoleDescription();
@@ -357,6 +368,196 @@ function getScoreClass(score) {
   if (score < 20) return "score-good";
   if (score < 40) return "score-medium";
   return "score-high";
+}
+
+/**
+ * 3.10 范文仿写
+ */
+async function imitateStyle() {
+  try {
+    // 获取范文文件
+    const sampleFileInput = document.getElementById("sampleFile");
+    const sampleFile = sampleFileInput.files[0];
+    
+    if (!sampleFile) {
+      showStatus("请先上传范文文件！", "error");
+      return;
+    }
+    
+    showStatus("正在读取选中文本...", "info");
+    
+    // 获取当前选中的文本
+    const selectedText = await getSelectedText();
+    
+    if (!selectedText || selectedText.trim() === "") {
+      showStatus("请先选中文档中需要改写的文字！", "error");
+      return;
+    }
+    
+    showLoading("正在读取范文并分析风格...");
+    
+    // 读取范文内容
+    const sampleContent = await readTextFile(sampleFile);
+    
+    // 获取仿写选项
+    const imitateStructure = document.getElementById("imitateStructure").checked;
+    const imitateStyle = document.getElementById("imitateStyle").checked;
+    const imitateVocabulary = document.getElementById("imitateVocabulary").checked;
+    const imitateTone = document.getElementById("imitateTone").checked;
+    
+    document.getElementById("loadingText").textContent = "AI 正在分析范文风格...";
+    
+    // 智能判断上传的是格式说明还是实际范文
+    const isFormatGuide = sampleContent.includes("格式说明") || 
+                          sampleContent.includes("版面設定") || 
+                          sampleContent.includes("字型設定") ||
+                          sampleContent.includes("論文架構") ||
+                          sampleContent.includes("格式範例");
+    
+    let prompt = "";
+    
+    if (isFormatGuide) {
+      // 如果是格式说明文档
+      prompt = `你收到的是一份论文格式说明文档，而不是实际的范文内容。
+
+【格式说明文档】
+${sampleContent.substring(0, 4000)}
+
+【我的文本内容】
+${selectedText}
+
+【任务要求】
+请根据格式说明文档中的要求，将我的文本内容改写成符合该格式规范的论文。
+
+具体要求：
+1. 严格按照格式说明中的结构要求组织内容
+2. 如果格式说明要求特定的章节（如：摘要、前言、研究方法、结果与讨论、结论等），请按此结构重新组织我的内容
+3. 保持我的核心观点和内容不变，只调整结构和表达方式以符合格式要求
+4. 如果格式说明中有字数限制（如摘要600字），请严格遵守
+5. 如果格式说明要求特定的写作风格（如学术性、正式性），请调整语言风格
+6. 添加格式说明中要求的必要元素（如关键字、计划编号等的占位符）
+
+请直接输出改写后的内容，不要包含任何解释说明。`;
+      
+    } else {
+      // 如果是实际范文
+      prompt = `请仔细分析以下范文的特点，然后根据范文的风格改写我的文本。
+
+【范文】
+${sampleContent.substring(0, 3000)}
+
+【需要改写的文本】
+${selectedText}
+
+【仿写要求】
+`;
+
+      if (imitateStructure) {
+        prompt += `
+1. 结构仿写：
+   - 模仿范文的段落结构和层次
+   - 学习范文的论证逻辑和展开方式
+   - 参考范文的开头、过渡和结尾方式`;
+      }
+      
+      if (imitateStyle) {
+        prompt += `
+2. 写作风格：
+   - 模仿范文的句式特点（长短句搭配、句式变化等）
+   - 学习范文的表达方式和修辞手法
+   - 保持与范文相似的语言风格（正式/口语化、严谨/生动等）`;
+      }
+      
+      if (imitateVocabulary) {
+        prompt += `
+3. 用词习惯：
+   - 使用与范文相似的专业术语和词汇
+   - 学习范文的用词精准度和丰富度
+   - 模仿范文的词汇搭配习惯`;
+      }
+      
+      if (imitateTone) {
+        prompt += `
+4. 语气语调：
+   - 保持与范文一致的语气（客观/主观、严肃/轻松等）
+   - 模仿范文的情感表达方式
+   - 学习范文的态度和立场表达`;
+      }
+      
+      prompt += `
+
+【重要提示】
+- 保持我的文本的核心内容和观点不变
+- 只改变表达方式，使其更接近范文风格
+- 确保改写后的内容自然流畅，不生硬
+- 字数可以适当调整，但不要偏离太多
+
+请直接输出改写后的内容，不要包含任何解释说明。`;
+    }
+    
+    document.getElementById("loadingText").textContent = "AI 正在仿写中...";
+    
+    // 调用 AI 服务
+    const rewrittenText = await aiService.generateContent(prompt);
+    
+    hideLoading();
+    showResult(rewrittenText);
+    
+    if (isFormatGuide) {
+      showStatus("✅ 已按格式要求改写完成！", "success");
+    } else {
+      showStatus("✅ 范文仿写完成！", "success");
+    }
+    
+  } catch (error) {
+    console.error(error);
+    hideLoading();
+    showStatus("❌ 仿写失败：" + error.message, "error");
+  }
+}
+
+/**
+ * 读取文本文件（支持 .txt、.doc、.docx）
+ */
+function readTextFile(file) {
+  return new Promise((resolve, reject) => {
+    const fileName = file.name.toLowerCase();
+    
+    if (fileName.endsWith('.txt')) {
+      // 读取 TXT 文件
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve(e.target.result);
+      };
+      reader.onerror = () => reject(new Error("TXT 文件读取失败"));
+      reader.readAsText(file, 'UTF-8');
+      
+    } else if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+      // 读取 Word 文件
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const arrayBuffer = e.target.result;
+          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          const text = result.value;
+          
+          if (!text || text.trim().length === 0) {
+            reject(new Error("Word 文档内容为空或无法读取"));
+            return;
+          }
+          
+          resolve(text);
+        } catch (error) {
+          reject(new Error("Word 文档解析失败：" + error.message));
+        }
+      };
+      reader.onerror = () => reject(new Error("Word 文件读取失败"));
+      reader.readAsArrayBuffer(file);
+      
+    } else {
+      reject(new Error("不支持的文件格式，请上传 .txt、.doc 或 .docx 文件"));
+    }
+  });
 }
 
 /**
@@ -659,6 +860,7 @@ export {
   checkPlagiarism,
   reducePlagiarism,
   formatPaper,
+  imitateStyle,
   generateContent,
   analyzeExcel
 };

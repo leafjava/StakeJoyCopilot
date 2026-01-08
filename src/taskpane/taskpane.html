@@ -195,6 +195,49 @@
         </div>
 
         <div class="feature-section">
+            <h3 class="ms-font-l section-title">📚 范文仿写</h3>
+            <p class="ms-font-s description">上传范文或格式说明，AI 将根据其风格/格式改写你的文本</p>
+            
+            <div class="imitate-upload">
+                <label class="ms-font-s control-group">上传文件（支持 .txt、.doc、.docx）：</label>
+                <input type="file" id="sampleFile" accept=".txt,.doc,.docx" class="file-input" />
+                <div id="uploadStatus" class="upload-status">
+                    <span>✅ 已选择：</span><span class="file-name" id="fileName"></span>
+                </div>
+            </div>
+            
+            <div class="imitate-options">
+                <label class="ms-font-s control-group">仿写内容（可多选）：</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="imitateStructure" checked />
+                        <label for="imitateStructure">结构布局</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="imitateStyle" checked />
+                        <label for="imitateStyle">写作风格</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="imitateVocabulary" checked />
+                        <label for="imitateVocabulary">用词习惯</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="imitateTone" checked />
+                        <label for="imitateTone">语气语调</label>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="format-hint">💡 支持两种模式：<br>
+            1️⃣ 上传<strong>实际范文</strong>：AI 会模仿其写作风格<br>
+            2️⃣ 上传<strong>格式说明</strong>：AI 会按格式要求重新组织你的内容</p>
+            
+            <button id="imitateStyleBtn" class="ms-Button ms-Button--primary">
+                <span class="ms-Button-label">开始仿写</span>
+            </button>
+        </div>
+
+        <div class="feature-section">
             <h3 class="ms-font-l section-title">✨ AI 生成内容</h3>
             <textarea id="promptInput" class="input-area large-input" placeholder="输入你的需求，例如：写一段关于人工智能的介绍..." rows="6"></textarea>
             <button id="generateBtn" class="ms-Button ms-Button--primary">

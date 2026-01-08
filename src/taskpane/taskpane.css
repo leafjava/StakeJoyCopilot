@@ -538,3 +538,57 @@ body {
     font-size: 12px;
     line-height: 1.5;
 }
+
+/* 范文仿写样式 */
+.imitate-upload {
+    margin-bottom: 16px;
+}
+
+.upload-status {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f3f2f1;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #323130;
+    display: none;
+}
+
+.upload-status.show {
+    display: block;
+}
+
+.upload-status .file-name {
+    font-weight: 600;
+    color: #0078d4;
+}
+
+.imitate-options {
+    margin-bottom: 16px;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.checkbox-item label {
+    font-size: 13px;
+    color: #323130;
+    cursor: pointer;
+    user-select: none;
+}

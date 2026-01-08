@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Config files with sensitive data
+src/config.js
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Office Add-in
+*.cer
+*.pfx
+
+# Environment variables
+.env
+.env.local
+
+# Backend
+backend-example/.env
+backend-example/node_modules/

@@ -1,80 +1,167 @@
-/* 
- * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
- * See LICENSE in the project root for license information.
- */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+}
 
- html,
- body {
-     width: 100%;
-     height: 100%;
-     margin: 0;
-     padding: 0;
- }
- 
- ul {
-     margin: 0;
-     padding: 0;
- }
- 
- .ms-welcome__header {
+.app-header {
     padding: 20px;
-    padding-bottom: 30px;
-    padding-top: 100px;
-    display: -webkit-flex;
     display: flex;
-    -webkit-flex-direction: column;
-    flex-direction: column;
     align-items: center;
- }
-
- .ms-welcome__main {
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex-direction: column;
-    flex-direction: column;
-    -webkit-flex-wrap: nowrap;
-    flex-wrap: nowrap;
-    -webkit-align-items: center;
-    align-items: center;
-    -webkit-flex: 1 0 0;
-    flex: 1 0 0;
-    padding: 10px 20px;
- }
- 
- .ms-welcome__main > h2 {
-     width: 100%;
-     text-align: center;
- }
- 
- .ms-welcome__features {
-     list-style-type: none;
-     margin-top: 20px;
- }
- 
- .ms-welcome__features.ms-List .ms-ListItem {
-     padding-bottom: 20px;
-     display: -webkit-flex;
-     display: flex;
- }
- 
- .ms-welcome__features.ms-List .ms-ListItem > .ms-Icon {
-     margin-right: 10px;
- }
- 
- .ms-welcome__action.ms-Button--hero {
-     margin-top: 30px;
- }
- 
-.ms-Button.ms-Button--hero .ms-Button-label {
-  color: #0078d7;
+    gap: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.ms-Button.ms-Button--hero:hover .ms-Button-label,
-.ms-Button.ms-Button--hero:focus .ms-Button-label{
-  color: #005a9e;
-  cursor: pointer;
+.app-header img {
+    border-radius: 8px;
 }
 
-b {
-    font-weight: bold;
+.app-main {
+    padding: 20px;
+    overflow-y: auto;
+    height: calc(100vh - 90px);
+}
+
+.feature-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f3f2f1;
+    border-radius: 8px;
+    border-left: 4px solid #0078d4;
+}
+
+.feature-section h3 {
+    margin: 0 0 10px 0;
+    color: #323130;
+}
+
+.description {
+    color: #605e5c;
+    margin: 8px 0 15px 0;
+    line-height: 1.5;
+}
+
+.input-area {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #8a8886;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 10px;
+    resize: vertical;
+}
+
+.input-area:focus {
+    outline: none;
+    border-color: #0078d4;
+}
+
+.file-input {
+    display: block;
+    margin-bottom: 10px;
+    padding: 8px;
+    width: 100%;
+}
+
+.ms-Button {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.ms-Button--primary {
+    background-color: #0078d4;
+    color: white;
+}
+
+.ms-Button--primary:hover {
+    background-color: #106ebe;
+}
+
+.ms-Button--primary:active {
+    background-color: #005a9e;
+}
+
+.ms-Button--hero {
+    background-color: #107c10;
+    color: white;
+    margin-top: 10px;
+}
+
+.ms-Button--hero:hover {
+    background-color: #0b5a08;
+}
+
+.ms-Button-label {
+    display: block;
+}
+
+.result-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: #fff;
+    border: 2px solid #0078d4;
+    border-radius: 8px;
+}
+
+.result-content {
+    padding: 15px;
+    background: #f3f2f1;
+    border-radius: 4px;
+    margin: 10px 0;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.status-msg {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background: #323130;
+    color: white;
+    border-radius: 4px;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.status-msg.show {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.ms-welcome__main {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.ms-welcome__main h2 {
+    color: #323130;
+}
+
+.ms-welcome__main a {
+    color: #0078d4;
+    text-decoration: none;
+}
+
+.ms-welcome__main a:hover {
+    text-decoration: underline;
 }
